@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-flogger",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,6 +8,7 @@
   },
   "author": "Alex Skov Jensen",
   "license": "ISC",
+  "keywords": [ "node-red", "flogger", "logger", "logging", "logfile" ],
   "node-red" : {
     "nodes": {
       "flogger": "flogger.js"
