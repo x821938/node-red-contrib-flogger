@@ -1,0 +1,125 @@
+
+<script type="text/javascript">
+    RED.nodes.registerType('config-log',{
+        category: 'config',
+        defaults: {
+            logname: {value:"",required:true},
+            logdir: {value:"",required:true},
+            stamp: {value:"test"}
+        },
+        label: function() {
+            return this.logname;
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="config-log">
+    <div class="form-row">
+        <label for="node-config-input-logname"><i class="icon-bookmark"></i> Config Name</label>
+        <input type="text" id="node-config-input-logname">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-logdir"><i class="fa fa-sitemap"></i> Log Dir</label>
+        <input type="text" id="node-config-input-logdir">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-stamp"><i class="fa fa-clock-o"></i> Timestamp</label>
+        <input type="checkbox" id="node-config-input-stamp" style="display: inline-block; width: auto; vertical-align: top;">
+    </div>
+</script>
+
+
+
+
+
+<script type="text/javascript">
+    RED.nodes.registerType('flogger',{
+        category: 'output',
+        color: '#FFAAAA',
+        icon: "file.png",
+        defaults: {
+            name: {value:"",required:false},
+            logfile: {value:"", required:true},
+            inputobject: {value: "payload"},
+            loglevel: {value:"INF", required: false},
+            logconfig: {type:"config-log"},
+            appendtext: {value:"", required:false}
+        },
+        inputs:1,
+        outputs:0,
+        label: function() {
+            return this.name||"flogger";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="flogger">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+        <div class="form-row">
+        <label for="node-input-logfile"><i class="fa fa-file-text-o"></i> Logfile</label>
+        <input type="text" id="node-input-logfile" placeholder="Name of the logfile">
+    </div>
+    <div class="form-row">
+        <label for="node-input-inputobject"><i class="fa fa-chevron-right"></i> Log msg.</label>
+        <input type="text" id="node-input-inputobject" placeholder="Part of msg object. Can be empty.">
+    </div>
+    <div class="form-row">
+        <label for="node-input-loglevel"><i class="fa fa-exclamation"></i> Level</label>
+        <select type="text" id="node-input-loglevel" placeholder="Log Level">
+            <option value="DBG">DBG</option>
+            <option selected value="INF">INF</option>
+            <option value="WRN">WRN</option>
+            <option value="ERR">ERR</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-logconfig"><i class="fa fa-cogs"></i> Log Config</label>
+        <input type="text" id="node-input-logconfig" placeholder="Log Configuration">
+    </div>
+    <div class="form-row">
+        <label for="node-input-appendtext"><i class="fa fa-plus"></i> Append Text</label>
+        <input type="text" id="node-input-appendtext" placeholder="Text to prepend each message with">
+    </div>
+</script>
+
+
+
+
+
+<script type="text/x-red" data-help-name="flogger">
+<p>Advanced logger for outputting to multiple files</p>
+
+<h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>msg
+            <span class="property-type">object</span>
+        </dt>
+        <dd> Whatever object is sent into flogger will be sent to a file. </dd>
+    </dl>
+
+
+<h3>Details</h3>
+    <p>Any msg object can be sent into flogger and it will be written to a logfile. 
+    <h4>Log Config</h4>To setup flogger
+    you first have to create a config. Most users will only have 1 config entry.</p>
+    <p>In the config you define <code>Log Dir</code> which describes the log directory relative to ~. 
+    If you want a <code>Timestamp</code> added to each logged line, click the checkbox.</p>
+    <h4>Node setup</h4>
+    <p><code>Logfile</code> is the filename that the current node will log to. If <code>Log msg.</code>
+    is left empty, the entire msg object is logged as a separate logline. If you eg. want only to log
+    the payload, you can simply type "payload" in this field</p>
+    <p><code>Append Text</code> can be used if you want to add extra descriptive text to each log line.
+    <code>Level</code> can be set to DBG, INF, WRN or ERR.</p>
+    <p>Whenever flogger receives a message the status text on the node will change to the time it
+    received the message. If the file can´t be written an error message will be displayed on the
+    node</p>
+
+<h3>References</h3>
+    <ul>
+        <li><a href="https://github.com/x821938/node-red-contrib-flogger.git">Github repository</a> - Full Source code</li>
+        <li><a href="https://cron.dk">Cron.dk</a> - My personal blog</li>
+    </ul>
+</script>
