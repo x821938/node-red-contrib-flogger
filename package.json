@@ -8,8 +8,14 @@
   },
   "author": "Alex Skov Jensen",
   "license": "ISC",
-  "keywords": [ "node-red", "flogger", "logger", "logging", "logfile" ],
-  "node-red" : {
+  "keywords": [
+    "node-red",
+    "flogger",
+    "logger",
+    "logging",
+    "logfile"
+  ],
+  "node-red": {
     "nodes": {
       "flogger": "flogger.js"
     }
