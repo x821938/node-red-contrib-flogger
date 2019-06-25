@@ -19,7 +19,11 @@ module.exports = function(RED) {
 			appendtext = node.appendtext || "";
 
 			if (node.logconfig.stamp) {
-				logstamp = now.toISOString() + " ";
+				if (node.logconfig.uselocaltime) {
+					logstamp = now.toLocaleString() + " ";
+				} else {
+					logstamp = now.toISOString() + " ";
+				}
 			} else {
 				logstamp = "";
 			};
@@ -35,24 +39,25 @@ module.exports = function(RED) {
 			};
 
 			fs.appendFile(path, logline, (err) => {  
-    			if (err) {
-    				node.status({shape: "ring", fill: "red", text: "Cant write file!"});
-    			} else {
+				if (err) {
+					node.status({shape: "ring", fill: "red", text: "Cant write file!"});
+				} else {
 					nowstrstatus = now.toLocaleString();
-    				node.status({shape: "ring", fill: "green", text: nowstrstatus});
-    			}
+					node.status({shape: "ring", fill: "green", text: nowstrstatus});
+				}
 			});
 		});
 	}
 
 	RED.nodes.registerType("flogger",FloggerNode);
 
-    function FloggerConfigNode(n) {
-        RED.nodes.createNode(this,n);
-        this.logdir = n.logdir;
-        this.logname = n.logname;
-        this.stamp = n.stamp;
-    }
+	function FloggerConfigNode(n) {
+		RED.nodes.createNode(this,n);
+		this.logdir = n.logdir;
+		this.logname = n.logname;
+		this.stamp = n.stamp;
+		this.uselocaltime = n.uselocaltime;
+	}
 
- 	RED.nodes.registerType("config-log",FloggerConfigNode);
+	RED.nodes.registerType("config-log",FloggerConfigNode);
 }
