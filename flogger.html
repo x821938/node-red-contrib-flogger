@@ -5,8 +5,8 @@
 		defaults: {
 			logname: {value:"",required:true},
 			logdir: {value:"",required:true},
-			stamp: {value:""},
-			uselocaltime: {value:""}
+			stamp: {value:"utc"},
+			logstyle: {value:"plain"},
 		},
 		label: function() {
 			return this.logname;
@@ -25,11 +25,18 @@
 	</div>
 	<div class="form-row">
 		<label for="node-config-input-stamp"><i class="fa fa-clock-o"></i> Timestamp</label>
-		<input type="checkbox" id="node-config-input-stamp" style="display: inline-block; width: auto; vertical-align: top;">
+		<select type="text" id="node-config-input-stamp" placeholder="Time Stamp">
+			<option value="none">None</option>
+			<option value="utc">UTC</option>
+			<option value="local">Local</option>
+		</select>
 	</div>
 	<div class="form-row">
-		<label for="node-config-uselocaltime-stamp"><i class="fa fa-clock-o"></i> Local time</label>
-		<input type="checkbox" id="node-config-input-uselocaltime" style="display: inline-block; width: auto; vertical-align: top;">
+		<label for="node-config-input-logstyle"><i class="fa fa-clock-o"></i> Log Style</label>
+		<select type="text" id="node-config-input-logstyle" placeholder="Log Style">
+			<option value="plain">Plain Text</option>
+			<option value="json">Pure JSON</option>
+		</select>
 	</div>
 </script>
 
@@ -45,15 +52,24 @@
 		defaults: {
 			name: {value:"",required:false},
 			logfile: {value:"", required:true},
-			inputobject: {value: "payload"},
-			loglevel: {value:"INF", required: false},
+			inputobject: {},
+			inputobjectType: {value: 'msg'},
+			loglevel: {value:"INFO", required: true},
 			logconfig: {type:"config-log"},
-			appendtext: {value:"", required:false}
+			appendtext: {value:"", required:false},
+			sendpane: {value:""},
 		},
 		inputs:1,
-		outputs:0,
+		outputs:1,
 		label: function() {
 			return this.name||"flogger";
+		},
+		oneditprepare: function() {
+			$('#node-input-inputobject').typedInput({
+				default: 'msg',
+        		typeField: $("#node-input-inputobjectType"),
+        		types: ['msg','flow','global']
+      		});
 		}
 	});
 </script>
@@ -68,16 +84,18 @@
 		<input type="text" id="node-input-logfile" placeholder="Name of the logfile">
 	</div>
 	<div class="form-row">
-		<label for="node-input-inputobject"><i class="fa fa-chevron-right"></i> Log msg.</label>
-		<input type="text" id="node-input-inputobject" placeholder="Part of msg object. Can be empty.">
+		<label for="node-input-inputobject"><i class="fa fa-chevron-right"></i> Log this</label>
+		<input type="text" id="node-input-inputobject" style="width:70%">
+		<input type="hidden" id="node-input-inputobjectType">
 	</div>
 	<div class="form-row">
 		<label for="node-input-loglevel"><i class="fa fa-exclamation"></i> Level</label>
 		<select type="text" id="node-input-loglevel" placeholder="Log Level">
-			<option value="DBG">DBG</option>
-			<option selected value="INF">INF</option>
-			<option value="WRN">WRN</option>
-			<option value="ERR">ERR</option>
+			<option value="ERROR">ERROR</option>
+			<option value="WARN">WARN</option>
+			<option value="INFO">INFO</option>
+			<option value="DEBUG">DEBUG</option>
+			<option value="TRACE">TRACE</option>
 		</select>
 	</div>
 	<div class="form-row">
@@ -87,6 +105,10 @@
 	<div class="form-row">
 		<label for="node-input-appendtext"><i class="fa fa-plus"></i> Append Text</label>
 		<input type="text" id="node-input-appendtext" placeholder="Text to prepend each message with">
+	</div>
+		<div class="form-row">
+		<label for="node-input-sendpane"><i class="fa fa-bug"></i> Add To Pane</label>
+		<input type="checkbox" id="node-input-sendpane" style="display: inline-block; width: auto; vertical-align: top;">
 	</div>
 </script>
 
@@ -103,28 +125,48 @@
 			<span class="property-type">object</span>
 		</dt>
 		<dd> Whatever object is sent into flogger will be sent to a file. </dd>
+		<dt>msg.loglevel
+			<span class="property-type">string</span>
+		</dt>
+		<dd> This can be used to override the loglevel set on the node. Possible
+		values: ERROR, WARN, INFO, DEBUG and TRACE. If an invalid level is provided
+		the node will default to the loglevel set on the node </dd>
 	</dl>
 
+<h3>Outputs</h3>
+	<dl class="message-properties">
+		<dt>msg
+			<span class="property-type">object</span>
+		</dt>
+		<dd> If you chose to use flogger for passthrough to another node, the incoming
+		msg object will be send out without modification </dd>
+	</dl>
 
 <h3>Details</h3>
 	<p>Any msg object can be sent into flogger and it will be written to a logfile. 
-	<h4>Log Config</h4>To setup flogger
+
+<h3>Log Config</h3>To setup flogger
 	you first have to create a config. Most users will only have 1 config entry.</p>
 	<p>In the config you define <code>Log Dir</code> which describes the log directory relative to ~.
-	Eg. writing "logs" in the field will place logfiles under /home/username/logs on linux. Remember
+	Eg. writing "logs" in this field will place logfiles under /home/username/logs on linux. Remember
 	that you have to create the directory yourself</p>
-	<p>If you want a <code>Timestamp</code> added to each logged line, click the checkbox.</p>
-	<p>Check the <code>Local Time</code> checkbox if you want the time from your local timezone 
-	instead of UTC</p>
-	<h4>Node setup</h4>
-	<p><code>Logfile</code> is the filename that the current node will log to. If <code>Log msg.</code>
-	is left empty, the entire msg object is logged as a separate logline. If you eg. want only to log
-	the payload, you can simply type "payload" in this field</p>
-	<p><code>Append Text</code> can be used if you want to add extra descriptive text to each log line.
-	<code>Level</code> can be set to DBG, INF, WRN or ERR.</p>
+	<p>In the <code>Timestamp</code> dropdown you can choose if you want to stamp each log line with
+	either UTC time, local time or no time at all</p>
+	<p>In the <code>Log Style</code> dropdown you can choose if you want a normal plain logfile similar
+	to syslog, or if you want a json logfile similar to NLOG</p>
+<h3>Node setup</h3>
+	<p><code>Logfile</code> is the filename that the current node will log to.</p> 
+	<code>Log this</code> is the object you want to log. If type is set to msg and the field left empty,
+	the entire msg object is logged. If you eg. want only to log the payload, you can simply set it to msg
+	and type "payload" in this field. You can also log flow and	global variables</p>
+	<p><code>Level</code> can be set to ERROR, WARM, INFO, DEBUG or TRACE</p>
+	<p><code>Append Text</code> can be used if you want to add extra descriptive text to each log line.</p>
+	<p><code>Add to Pane</code> can be checked if you also want the message sent to the debug side pane
+	of Node-RED.</p>
 	<p>Whenever flogger receives a message the status text on the node will change to the time it
 	received the message. If the file can´t be written an error message will be displayed on the
-	node</p>
+	node. Most obvious cause could be that the ouput directory doesn't exist or doesn't have the
+	right permissions</p>
 
 <h3>References</h3>
 	<ul>
