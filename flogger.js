@@ -1,5 +1,6 @@
 const fs = require('fs');
 const moment = require('moment');
+const mustache=require('mustache');
 const validLoglevels = ["ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
 
 module.exports = function(RED) {
@@ -8,9 +9,10 @@ module.exports = function(RED) {
 
 		this.loglevel = n.loglevel;
 		this.logfile = n.logfile;
-		this.appendtext = n.appendtext;
+		this.inputchoice = n.inputchoice;
 		this.inputobject = n.inputobject;
 		this.inputobjectType = n.inputobjectType;
+		this.inputmoustache = n.inputmoustache;
 		this.logconfig = RED.nodes.getNode(n.logconfig);
 		this.sendpane = n.sendpane;
 		var node = this;
@@ -24,8 +26,6 @@ module.exports = function(RED) {
 				outLoglevel = msg.loglevel;
 			}
 
-			outAppendtext = node.appendtext || "";
-
 			if (node.logconfig.stamp == "none") {
 				outLogstamp = "";
 			} else if (node.logconfig.stamp == "utc") {
@@ -34,28 +34,38 @@ module.exports = function(RED) {
 				outLogstamp = moment(now).parseZone().local().format("YYYY/MM/DD HH:mm:ss");
 			}
 
-			outMessage = "Error in setup of flogger node"
-			if (node.inputobjectType == "msg") {
-				if (node.inputobject) {
-					outRaw = eval("msg." + node.inputobject);
+			if (node.inputchoice == "object") {
+				outMessage = "Please choose a flow or global name!"
+				if ( node.inputobjectType == "msg") {
+					if (node.inputobject) {
+						outRaw = eval("msg." + node.inputobject);
+						outMessage = JSON.stringify(outRaw);
+						outVar = "msg." + node.inputobject;
+					} else {
+						outRaw = msg;
+						outMessage = JSON.stringify(msg);
+						outVar = "msg";
+					};
+				} else if (node.inputobjectType == "flow" && node.inputobject.length>0) {
+					flowvar = node.inputobject;
+					outRaw = node.context().flow.get(flowvar);
 					outMessage = JSON.stringify(outRaw);
-					outVar = "msg." + node.inputobject;
-				} else {
-					outRaw = msg;
-					outMessage = JSON.stringify(msg);
-					outVar = "msg";
-				};
-			} else if (node.inputobjectType == "flow" && node.inputobject.length>0) {
-				flowvar = node.inputobject;
-				outRaw = node.context().flow.get(flowvar);
-				outMessage = JSON.stringify(outRaw);
-				outVar = "flow." + flowvar;
-			} else if (node.inputobjectType == "global" && node.inputobject.length>0) {
-				globalvar = node.inputobject
-				outRaw = node.context().global.get(globalvar);
-				outMessage = JSON.stringify(outRaw);
-				outVar = "global." + globalvar;
-			}
+					outVar = "flow." + flowvar;
+				} else if (node.inputobjectType == "global" && node.inputobject.length>0) {
+					globalvar = node.inputobject
+					outRaw = node.context().global.get(globalvar);
+					outMessage = JSON.stringify(outRaw);
+					outVar = "global." + globalvar;
+				}
+			} else if (node.inputchoice == "fullmsg") {
+				outRaw = msg;
+				outMessage = JSON.stringify(msg);
+				outVar = "msg";
+			} else if (node.inputchoice == "moustache") {
+				outRaw = mustache.render(node.inputmoustache, msg);
+				outMessage = outRaw;
+				outVar = "moustache";
+			} 
 
 			if (node.sendpane) { // User wants the logentry also in the debugpane of the webinterface
 				node.warn(msg);
@@ -64,16 +74,15 @@ module.exports = function(RED) {
 
 			if (node.logconfig.logstyle == "plain") {
 				if (node.logconfig.stamp == "none") {
-					logline = outLoglevel + " [" + outVar + "] " + outAppendtext + outMessage + "\n";
+					logline = outLoglevel + " [" + outVar + "] " + outMessage + "\n";
 				} else {
-					logline = outLogstamp + " " + outLoglevel + " [" + outVar + "] " + outAppendtext + outMessage + "\n";
+					logline = outLogstamp + " " + outLoglevel + " [" + outVar + "] " + outMessage + "\n";
 				}
 			} else {
 				logobject = {};
 				logobject.time = outLogstamp;
 				logobject.level = outLoglevel;
 				logobject.var = outVar;
-				logobject.appendtext = outAppendtext;
 				logobject.message = outRaw;
 				logline = JSON.stringify(logobject) + "\n";
 			}

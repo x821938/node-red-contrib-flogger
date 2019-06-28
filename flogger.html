@@ -52,11 +52,12 @@
 		defaults: {
 			name: {value:"",required:false},
 			logfile: {value:"", required:true},
-			inputobject: {},
+			inputchoice: {value:"fullmsg"},
+			inputobject: {value:"payload"},
 			inputobjectType: {value: 'msg'},
+			inputmoustache: {value: 'Recieved payload {{payload}} and topic {{topic}}'},
 			loglevel: {value:"INFO", required: true},
 			logconfig: {type:"config-log"},
-			appendtext: {value:"", required:false},
 			sendpane: {value:""},
 		},
 		inputs:1,
@@ -70,6 +71,21 @@
         		typeField: $("#node-input-inputobjectType"),
         		types: ['msg','flow','global']
       		});
+
+      		$("#node-input-inputchoice").change(function() {
+      			if ($(this).val() == "fullmsg") {
+      				$(".inputobject").hide();
+      				$(".inputmoustache").hide();
+      			}
+      			if ($(this).val() == "object") {
+      				$(".inputobject").show();
+      				$(".inputmoustache").hide();
+      			}
+       			if ($(this).val() == "moustache") {
+      				$(".inputobject").hide();
+      				$(".inputmoustache").show();
+      			}
+			});
 		}
 	});
 </script>
@@ -84,7 +100,19 @@
 		<input type="text" id="node-input-logfile" placeholder="Name of the logfile">
 	</div>
 	<div class="form-row">
-		<label for="node-input-inputobject"><i class="fa fa-chevron-right"></i> Log this</label>
+		<label for="node-input-inputchoice"><i class="fa fa-exclamation"></i> Log</label>
+		<select type="text" id="node-input-inputchoice" placeholder="">
+			<option value="fullmsg">Full Message object</option>
+			<option value="object">Select object</option>
+			<option value="moustache">Moustache formatting</option>
+		</select>
+	</div>
+		<div class="form-row inputmoustache">
+		<label for="node-input-inputobject"><i class="fa fa-chevron-right"></i> Moustache</label>
+		<textarea id="node-input-inputmoustache" rows="5" style="width:70%"></textarea>
+	</div>
+	<div class="form-row inputobject">
+		<label for="node-input-inputobject"><i class="fa fa-chevron-right"></i> Object</label>
 		<input type="text" id="node-input-inputobject" style="width:70%">
 		<input type="hidden" id="node-input-inputobjectType">
 	</div>
@@ -103,10 +131,6 @@
 		<input type="text" id="node-input-logconfig" placeholder="Log Configuration">
 	</div>
 	<div class="form-row">
-		<label for="node-input-appendtext"><i class="fa fa-plus"></i> Append Text</label>
-		<input type="text" id="node-input-appendtext" placeholder="Text to prepend each message with">
-	</div>
-		<div class="form-row">
 		<label for="node-input-sendpane"><i class="fa fa-bug"></i> Add To Pane</label>
 		<input type="checkbox" id="node-input-sendpane" style="display: inline-block; width: auto; vertical-align: top;">
 	</div>
@@ -156,13 +180,14 @@
 	to syslog, or if you want a json logfile similar to NLOG</p>
 <h3>Node setup</h3>
 	<p><code>Logfile</code> is the filename that the current node will log to.</p> 
-	<code>Log this</code> is the object you want to log. If type is set to msg and the field left empty,
-	the entire msg object is logged. If you eg. want only to log the payload, you can simply set it to msg
-	and type "payload" in this field. You can also log flow and	global variables</p>
+	<code>Log</code> is a selection what to log. If you select "Full Message Object", the entire msg object
+	will be logged. If you choose "Select Object" you can log part of a message eg. msg.payload. You can also log
+    flow and global variables. The third option (Moustache formatting) is to create your own template for a logmessage. 
+	If you choose this you will get an example template that should work out of the box. Modify it to your own needs.</p>
 	<p><code>Level</code> can be set to ERROR, WARM, INFO, DEBUG or TRACE</p>
-	<p><code>Append Text</code> can be used if you want to add extra descriptive text to each log line.</p>
 	<p><code>Add to Pane</code> can be checked if you also want the message sent to the debug side pane
 	of Node-RED.</p>
+<h3>Operation</h3>
 	<p>Whenever flogger receives a message the status text on the node will change to the time it
 	received the message. If the file can´t be written an error message will be displayed on the
 	node. Most obvious cause could be that the ouput directory doesn't exist or doesn't have the
