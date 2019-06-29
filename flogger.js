@@ -34,32 +34,32 @@ module.exports = function(RED) {
 				outLogstamp = moment(now).parseZone().local().format("YYYY/MM/DD HH:mm:ss");
 			}
 
-			if (node.inputchoice == "object") {
+			if (node.inputchoice == "object" && node.inputobject.length>0 ) {
 				outMessage = "Please choose a flow or global name!"
 				if ( node.inputobjectType == "msg") {
 					if (node.inputobject) {
 						outRaw = eval("msg." + node.inputobject);
-						outMessage = JSON.stringify(outRaw);
+						outMessage = VarToString(outRaw);
 						outVar = "msg." + node.inputobject;
 					} else {
 						outRaw = msg;
-						outMessage = JSON.stringify(msg);
+						outMessage = VarToString(outRaw);
 						outVar = "msg";
 					};
-				} else if (node.inputobjectType == "flow" && node.inputobject.length>0) {
+				} else if (node.inputobjectType == "flow" ) {
 					flowvar = node.inputobject;
 					outRaw = node.context().flow.get(flowvar);
-					outMessage = JSON.stringify(outRaw);
+					outMessage = VarToString(outRaw);
 					outVar = "flow." + flowvar;
-				} else if (node.inputobjectType == "global" && node.inputobject.length>0) {
+				} else if (node.inputobjectType == "global") {
 					globalvar = node.inputobject
 					outRaw = node.context().global.get(globalvar);
-					outMessage = JSON.stringify(outRaw);
+					outMessage = VarToString(outRaw);
 					outVar = "global." + globalvar;
 				}
 			} else if (node.inputchoice == "fullmsg") {
 				outRaw = msg;
-				outMessage = JSON.stringify(msg);
+				outMessage = VarToString(outRaw);
 				outVar = "msg";
 			} else if (node.inputchoice == "moustache") {
 				outRaw = mustache.render(node.inputmoustache, msg);
@@ -110,4 +110,13 @@ module.exports = function(RED) {
 	}
 
 	RED.nodes.registerType("config-log",FloggerConfigNode);
+
+	function VarToString(v) {
+		if (typeof v == 'object') {
+			vs = JSON.stringify(v);
+		} else {
+			vs = v;
+		}
+		return vs;
+	}
 }
