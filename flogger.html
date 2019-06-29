@@ -9,9 +9,9 @@
 			logstyle: {value:"plain"},
 		},
 		label: function() {
-			return this.logname;
+			return this.logname
 		}
-	});
+	})
 </script>
 
 <script type="text/x-red" data-template-name="config-log">
@@ -50,8 +50,8 @@
 		color: '#FFAAAA',
 		icon: "file.png",
 		defaults: {
-			name: {value:"",required:false},
-			logfile: {value:"", required:true},
+			name: {value:""},
+			logfile: {value:""},
 			inputchoice: {value:"fullmsg"},
 			inputobject: {value:"payload"},
 			inputobjectType: {value: 'msg'},
@@ -63,31 +63,31 @@
 		inputs:1,
 		outputs:1,
 		label: function() {
-			return this.name||"flogger";
+			return this.name||"flogger"
 		},
 		oneditprepare: function() {
 			$('#node-input-inputobject').typedInput({
 				default: 'msg',
         		typeField: $("#node-input-inputobjectType"),
         		types: ['msg','flow','global']
-      		});
+      		})
 
       		$("#node-input-inputchoice").change(function() {
       			if ($(this).val() == "fullmsg") {
-      				$(".inputobject").hide();
-      				$(".inputmoustache").hide();
+      				$(".inputobject").hide()
+      				$(".inputmoustache").hide()
       			}
       			if ($(this).val() == "object") {
-      				$(".inputobject").show();
-      				$(".inputmoustache").hide();
+      				$(".inputobject").show()
+      				$(".inputmoustache").hide()
       			}
        			if ($(this).val() == "moustache") {
-      				$(".inputobject").hide();
-      				$(".inputmoustache").show();
+      				$(".inputobject").hide()
+      				$(".inputmoustache").show()
       			}
-			});
+			})
 		}
-	});
+	})
 </script>
 
 <script type="text/x-red" data-template-name="flogger">
@@ -155,6 +155,10 @@
 		<dd> This can be used to override the loglevel set on the node. Possible
 		values: ERROR, WARN, INFO, DEBUG and TRACE. If an invalid level is provided
 		the node will default to the loglevel set on the node </dd>
+		<dt>msg.filename
+			<span class="property-type">string</span>
+		</dt>
+		<dd> This can be used to override the filename set on the node.</dd>
 	</dl>
 
 <h3>Outputs</h3>
