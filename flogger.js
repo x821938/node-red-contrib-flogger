@@ -68,9 +68,8 @@ module.exports = function(RED) {
 			} 
 
 			if (node.sendpane) { // User wants the logentry also in the debugpane of the webinterface
-				node.warn(msg);
+				node.warn(outLoglevel + " [" + outVar + "] " + outMessage);
 			}
-
 
 			if (node.logconfig.logstyle == "plain") {
 				if (node.logconfig.stamp == "none") {
@@ -95,7 +94,7 @@ module.exports = function(RED) {
 					node.status({shape: "ring", fill: "green", text: nowstrstatus});
 				}
 			});
-			node.send(msg); // pass through message to t
+			node.send(msg); // pass through original message
 		});
 	}
 
