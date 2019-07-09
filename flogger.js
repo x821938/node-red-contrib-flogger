@@ -87,12 +87,13 @@ module.exports = function(RED) {
 			}
 
 			filename = node.logfile
-			if (msg.filename) filename = msg.filename // Filename override via msg object
+			if (!filename) filename = msg.filename // Filename override via msg object, only if filename not provided in config
 			if (filename) {
 				path = node.logconfig.logdir + "/" + filename
 				fs.appendFile(path, logline, (err) => {  
 					if (err) {
 						node.status({shape: "ring", fill: "red", text: "Cant write file!"})
+						node.error("Can't write file: " + err, msg);
 					} else {
 						nowstrstatus = now.toLocaleString()
 						node.status({shape: "ring", fill: "green", text: nowstrstatus})
@@ -100,6 +101,7 @@ module.exports = function(RED) {
 				})
 			} else {
 				node.status({shape: "ring", fill: "red", text: "Missing filename!"})
+				node.warn("Nothing got logged because you didn't provide a filename in configuration and has not been overridden from msg.filename")
 			}
 
 			node.send(msg); // pass through original message
