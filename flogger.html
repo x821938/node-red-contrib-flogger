@@ -155,11 +155,12 @@
 		<dd> This can be used to override the loglevel set on the node. Possible
 		values: ERROR, WARN, INFO, DEBUG and TRACE. If an invalid level is provided
 		the node will default to the loglevel set on the node </dd>
-		<dt>msg.filename
+		<dt>msg.logfile
 			<span class="property-type">string</span>
 		</dt>
-		<dd> This can be used te set the filename of the logfile. The filename
-		in the node-configuration has to be left empty to allow this</dd>
+		<dd> This can be used to override the name of the logfile set on the node.
+		If not provided flogger will log to the name provided in the node config.
+		</dd>
 	</dl>
 
 <h3>Outputs</h3>
@@ -184,7 +185,9 @@
 	<p>In the <code>Log Style</code> dropdown you can choose if you want a normal plain logfile similar
 	to syslog, or if you want a json logfile similar to NLOG</p>
 <h3>Node setup</h3>
-	<p><code>Logfile</code> is the filename that the current node will log to.</p> 
+	<p><code>Logfile</code> is the filename that the current node will log to. It can be overridden
+	with msg.logfile. If nothing is provided in this field and it's not overridden you will get an
+	error shown on the node</p> 
 	<code>Log</code> is a selection what to log. If you select "Full Message Object", the entire msg object
 	will be logged. If you choose "Select Object" you can log part of a message eg. msg.payload. You can also log
     flow and global variables. The third option (Moustache formatting) is to create your own template for a logmessage. 

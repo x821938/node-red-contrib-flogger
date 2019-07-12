@@ -25,12 +25,14 @@ module.exports = function(RED) {
 				outLoglevel = msg.loglevel
 			}
 
+			logtime = moment(now).parseZone().local().format("YYYY/MM/DD HH:mm:ss")
 			if (node.logconfig.stamp == "none") {
 				outLogstamp = ""
 			} else if (node.logconfig.stamp == "utc") {
-				outLogstamp = moment(now).utc().format("YYYY/MM/DD HH:mm:ss")
-			} else if (node.logconfig.stamp == "local") {
-				outLogstamp = moment(now).parseZone().local().format("YYYY/MM/DD HH:mm:ss")
+				logtime = moment(now).utc().format("YYYY/MM/DD HH:mm:ss") + "Z"
+				outLogstamp = logtime
+			} else if (node.logconfig.stamp == "local") {	
+				outLogstamp = logtime
 			}
 
 			if (node.inputchoice == "object" && node.inputobject.length>0 ) {
@@ -86,22 +88,21 @@ module.exports = function(RED) {
 				logline = JSON.stringify(logobject) + "\n"
 			}
 
-			filename = node.logfile
-			if (!filename) filename = msg.filename // Filename override via msg object, only if filename not provided in config
-			if (filename) {
-				path = node.logconfig.logdir + "/" + filename
+			logfile = node.logfile
+			if (msg.logfile) logfile = msg.logfile // logfile override via msg object if provided
+			if (logfile) {
+				path = node.logconfig.logdir + "/" + logfile
 				fs.appendFile(path, logline, (err) => {  
 					if (err) {
 						node.status({shape: "ring", fill: "red", text: "Cant write file!"})
 						node.error("Can't write file: " + err, msg);
 					} else {
-						nowstrstatus = now.toLocaleString()
-						node.status({shape: "ring", fill: "green", text: nowstrstatus})
+						node.status({shape: "ring", fill: "green", text: logtime})
 					}
 				})
 			} else {
-				node.status({shape: "ring", fill: "red", text: "Missing filename!"})
-				node.warn("Nothing got logged because you didn't provide a filename in configuration and has not been overridden from msg.filename")
+				node.status({shape: "ring", fill: "red", text: "Missing logfile!"})
+				node.warn("Nothing got logged because you didn't provide a logfile in configuration and has not been overridden from msg.logfile")
 			}
 
 			node.send(msg); // pass through original message
