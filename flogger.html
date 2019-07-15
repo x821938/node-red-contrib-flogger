@@ -18,13 +18,9 @@
 		oneditprepare: function() {
 			$("#node-config-input-logrotate").change(function() {
       			if ($(this).is(':checked')) {
-      				$(".compress").show()
-      				$(".logrotatecount").show()
-      				$(".logsize").show()
+      				$("#node-config-rotate-row").show()
       			} else {
-      				$(".compress").hide()
-      				$(".logrotatecount").hide()
-      				$(".logsize").hide()
+      				$("#node-config-rotate-row").hide()
       			}
 			})
 		},
@@ -65,17 +61,19 @@
 		<label for="node-config-input-logrotate"><i class="fa fa-repeat"></i> Rotate</label>
 		<input type="checkbox" id="node-config-input-logrotate" style="display: inline-block; width: auto; vertical-align: top;">
 	</div>
-	<div class="form-row compress">
-		<label for="node-config-input-logcompress"><i class="fa fa-compress"></i> Compress</label>
-		<input type="checkbox" id="node-config-input-logcompress" style="display: inline-block; width: auto; vertical-align: top;">
-	</div>
-	<div class="form-row logrotatecount">
-		<label for="node-config-input-logrotatecount"><i class="fa fa-hashtag"></i> Max logfiles</label>
-		<input type="text" id="node-config-input-logrotatecount">
-	</div>
-	<div class="form-row logsize">
-		<label for="node-config-input-logsize"><i class="fa fa-hashtag"></i> Max size /kB</label>
-		<input type="text" id="node-config-input-logsize">
+	<div id="node-config-rotate-row">
+		<div class="form-row">
+			<label style="width: auto; margin-left: 20px; margin-right: 10px;" for="node-config-input-logcompress"><i class="fa fa-compress"></i> Compress</label>
+			<input type="checkbox" id="node-config-input-logcompress" style="display: inline-block; width: auto; vertical-align: top;">
+		</div>
+		<div class="form-row">
+			<label style="width: auto; margin-left: 20px; margin-right: 10px;" for="node-config-input-logrotatecount"><i class="fa fa-hashtag"></i> Max logfiles</label>
+			<input type="text" id="node-config-input-logrotatecount" style="display: inline-block; width: 50%; vertical-align: top;">
+		</div>
+		<div class="form-row">
+			<label style="width: auto; margin-left: 20px; margin-right: 10px;" for="node-config-input-logsize"><i class="fa fa-hashtag"></i> Max size /kB</label>
+			<input type="text" id="node-config-input-logsize" style="display: inline-block; width: 50%; vertical-align: top;">
+		</div>
 	</div>
 </script>
 
@@ -147,11 +145,11 @@
 		</select>
 	</div>
 		<div class="form-row inputmoustache">
-		<label for="node-input-inputobject"><i class="fa fa-chevron-right"></i> Moustache</label>
+		<label style="width: auto; margin-left: 20px; margin-right: 10px;" for="node-input-inputobject"><i class="fa fa-chevron-right"></i> Moustache</label>
 		<textarea id="node-input-inputmoustache" rows="5" style="width:70%"></textarea>
 	</div>
 	<div class="form-row inputobject">
-		<label for="node-input-inputobject"><i class="fa fa-chevron-right"></i> Object</label>
+		<label style="width: auto; margin-left: 20px; margin-right: 10px;" for="node-input-inputobject"><i class="fa fa-chevron-right"></i> Object</label>
 		<input type="text" id="node-input-inputobject" style="width:70%">
 		<input type="hidden" id="node-input-inputobjectType">
 	</div>
