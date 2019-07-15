@@ -7,9 +7,32 @@
 			logdir: {value:"",required:true},
 			stamp: {value:"utc"},
 			logstyle: {value:"plain"},
+			logrotate: {value:""},
+			logcompress: {value:""},
+			logrotatecount: {value: "5"},
+			logsize: {value: "1000"}
 		},
 		label: function() {
 			return this.logname
+		},
+		oneditprepare: function() {
+			$("#node-config-input-logrotate").change(function() {
+      			if ($(this).is(':checked')) {
+      				$(".compress").show()
+      				$(".logrotatecount").show()
+      				$(".logsize").show()
+      			} else {
+      				$(".compress").hide()
+      				$(".logrotatecount").hide()
+      				$(".logsize").hide()
+      			}
+			})
+		},
+		oneditsave: function() {
+			if ($("#node-config-input-logrotate").is(':checked')) {
+				if ($("#node-config-input-logrotatecount").val() < 1) $("#node-config-input-logrotatecount").val(5)
+				if ($("#node-config-input-logsize").val() < 1) $("#node-config-input-logsize").val(1000)
+			}
 		}
 	})
 </script>
@@ -37,6 +60,22 @@
 			<option value="plain">Plain Text</option>
 			<option value="json">Pure JSON</option>
 		</select>
+	</div>
+	<div class="form-row">
+		<label for="node-config-input-logrotate"><i class="fa fa-repeat"></i> Rotate</label>
+		<input type="checkbox" id="node-config-input-logrotate" style="display: inline-block; width: auto; vertical-align: top;">
+	</div>
+	<div class="form-row compress">
+		<label for="node-config-input-logcompress"><i class="fa fa-compress"></i> Compress</label>
+		<input type="checkbox" id="node-config-input-logcompress" style="display: inline-block; width: auto; vertical-align: top;">
+	</div>
+	<div class="form-row logrotatecount">
+		<label for="node-config-input-logrotatecount"><i class="fa fa-hashtag"></i> Max logfiles</label>
+		<input type="text" id="node-config-input-logrotatecount">
+	</div>
+	<div class="form-row logsize">
+		<label for="node-config-input-logsize"><i class="fa fa-hashtag"></i> Max size /kB</label>
+		<input type="text" id="node-config-input-logsize">
 	</div>
 </script>
 
@@ -184,6 +223,14 @@
 	either UTC time, local time or no time at all</p>
 	<p>In the <code>Log Style</code> dropdown you can choose if you want a normal plain logfile similar
 	to syslog, or if you want a json logfile similar to NLOG</p>
+	<p>Check <code>Rotate</code> If you want to do automatic log rotation. If checked 3 more options
+	are shown:</p>
+	<p><code>Compress</code> Each rotated logfile will be gzip compressed if checked</p>
+	<p><code>Max logfiles</code> defines how many of each logfile you want. When the rotation
+	ends up with more than this amount the oldest will be deleted</p>
+	<p><code>Max Size /kB</code></p> defines the maximum allowed file size per logfile in kilobytes.
+	When this is reached the file is rotated. This setting is approximate and the file may get a few
+	hundred bytes bigger than this setting.
 <h3>Node setup</h3>
 	<p><code>Logfile</code> is the filename that the current node will log to. It can be overridden
 	with msg.logfile. If nothing is provided in this field and it's not overridden you will get an

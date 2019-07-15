@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-flogger",
-  "version": "1.1.7",
+  "version": "1.2.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,8 @@
   ],
   "dependencies": {
     "moment": "^2.24.0",
-    "mustache": "^3.0.1"
+    "mustache": "^3.0.1",
+    "log-rotate": "^0.2.8"
   },
   "node-red": {
     "nodes": {
