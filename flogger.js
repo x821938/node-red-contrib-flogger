@@ -43,7 +43,7 @@ module.exports = function(RED) {
 
 			logfile = node.logfile
 			if (msg.logfile) logfile = msg.logfile // logfile override via msg object if provided
-			LogRotate(node, logfile)
+			LogRotate(node, logfile, logline.length)
 			WriteMsgToFile(node, logfile, logline, logTimeStamp)
 			
 			node.send(msg); // pass through original message
@@ -180,24 +180,25 @@ module.exports = function(RED) {
 	}
 
 
-	/* Input: node object with all configuration etc and a filename with the full path to the logfile 
-	If the logfile exists and it exceeds the size set in node.logconfig.logrotate, it will be rotated
+	/* Input: node object, filename with the full path to the logfile and no. of bytes that is
+	going to be added to the logfile. This is to prevent it of tipping over the size.
+	If the logfile exists and it will exceed the size set in node.logconfig.logrotate, it will be rotated
 	There will be maximum node.logconfig.rotatecount files in the directory.
 	If compression is set in node.logconfig.compress then the rotated files will be gzipped
 	*/
-	function LogRotate(node, filename) {
+	function LogRotate(node, filename, addlength) {
 		if (node.logconfig.logrotate && filename) {
 			fullpath = node.logconfig.logdir + "/" + filename
 			if (fs.existsSync(fullpath)) {
 				stats = fs.statSync(fullpath)
 				fileSizeInBytes = stats["size"]
-				if (fileSizeInBytes >= node.logconfig.logsize * 1000 ) {
+				if (fileSizeInBytes + addlength + 1 >= node.logconfig.logsize * 1000 ) {
 					rotate(fullpath, { count: node.logconfig.logrotatecount, compress: (node.logconfig.logcompress==true)}, function(err) {
 						if (err) {
 							node.warn("Could not rotate logfiles: " + err)
 						} else {
 							if (!fs.existsSync(fullpath)) {
-								fs.closeSync(fs.openSync(fullpath, 'w'));  // Create a new empty file if there is none
+								fs.appendFileSync(fullpath,'');  // Create a new empty file if there is none
 							}
 						}
 					})
