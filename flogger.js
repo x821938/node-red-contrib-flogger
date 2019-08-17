@@ -32,11 +32,18 @@ module.exports = function(RED) {
 			}
 
 			if (node.logconfig.logstyle == "plain") {
-				if (node.logconfig.stamp == "none") {
-					logline = loglevel + " [" + logmessage.var + "] " + logmessage.msg + "\n"
-				} else {
-					logline = logTimeStamp + " " + loglevel + " [" + logmessage.var + "] " + logmessage.msg + "\n"
-				}
+				timeStamp = (node.logconfig.stamp === 'none' ? '' : logTimeStamp + ' ')
+				level = (loglevel === '' ? '' : loglevel + ' ')
+				topic = (node.logconfig.logtopic === true && msg.topic ? msg.topic : '')
+				source = (node.logconfig.logsource === true ? logmessage.var : '')
+				topicOrSource = (topic !== '' || source !== '')
+				topicAndSource = (topic !== '' && source !== '')
+				bracket1 = (topicOrSource ? '[' : '')
+				bracket2 = (topicOrSource ? '] ' : '')
+				separator = (topicAndSource ? ':' : '')
+
+				logline = timeStamp + level + bracket1 + topic + separator + source + bracket2 + logmessage.msg + '\n'
+
 			} else {
 				logline = GetJSONMsg(logTimeStamp, loglevel, logmessage.var, logmessage.raw)
 			}
@@ -45,19 +52,21 @@ module.exports = function(RED) {
 			if (msg.logfile) logfile = msg.logfile // logfile override via msg object if provided
 			LogRotate(node, logfile, logline.length)
 			WriteMsgToFile(node, logfile, logline, logTimeStamp)
-			
+
 			node.send(msg); // pass through original message
 		})
 	}
 
 	RED.nodes.registerType("flogger",FloggerNode)
-	
+
 	function FloggerConfigNode(n) {
 		RED.nodes.createNode(this,n)
 		this.logdir = n.logdir
 		this.logname = n.logname
 		this.stamp = n.stamp
 		this.logstyle = n.logstyle
+		this.logtopic = n.logtopic
+		this.logsource = n.logsource
 
 		this.logrotate = n.logrotate
 		this.logcompress = n.logcompress

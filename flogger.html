@@ -10,7 +10,9 @@
 			logrotate: {value:""},
 			logcompress: {value:""},
 			logrotatecount: {value: "5"},
-			logsize: {value: "1000"}
+			logsize: {value: "1000"},
+			logtopic: {value: ""},
+			logsource: {value: "1"},
 		},
 		label: function() {
 			return this.logname
@@ -23,6 +25,14 @@
       				$("#node-config-rotate-row").hide()
       			}
 			})
+
+			$("#node-config-input-logstyle").change(function() {
+                        	if ($(this).val() == "plain") {
+                                	$("#node-config-plain-row").show()
+                        	} else {
+					$("#node-config-plain-row").hide()
+                        	}
+                	})
 		},
 		oneditsave: function() {
 			if ($("#node-config-input-logrotate").is(':checked')) {
@@ -56,6 +66,16 @@
 			<option value="plain">Plain Text</option>
 			<option value="json">Pure JSON</option>
 		</select>
+	</div>
+	<div class="node-config-plain-row">
+		<div class="form-row">
+			<label style="width: auto; margin-left: 20px; margin-right: 10px;" for="node-config-input-logtopic"><i class="fa fa-chevron-right"></i> Incl topic</label>
+			<input type="checkbox" id="node-config-input-logtopic" style="display: inline-block; width: auto; vertical-align: top;">
+		</div>
+		<div class="form-row">
+			<label style="width: auto; margin-left: 20px; margin-right: 10px;" for="node-config-input-logsource"><i class="fa fa-chevron-right"></i> Incl source</label>
+			<input type="checkbox" id="node-config-input-logsource" style="display: inline-block; width: auto; vertical-align: top;">
+		</div>
 	</div>
 	<div class="form-row">
 		<label for="node-config-input-logrotate"><i class="fa fa-repeat"></i> Rotate</label>
@@ -93,7 +113,7 @@
 			inputobject: {value:"payload"},
 			inputobjectType: {value: 'msg'},
 			inputmoustache: {value: 'Recieved payload {{payload}} and topic {{topic}}'},
-			loglevel: {value:"INFO", required: true},
+			loglevel: {value:"INFO", required: false},
 			logconfig: {type:"config-log"},
 			sendpane: {value:""},
 		},
@@ -156,6 +176,7 @@
 	<div class="form-row">
 		<label for="node-input-loglevel"><i class="fa fa-exclamation"></i> Level</label>
 		<select type="text" id="node-input-loglevel" placeholder="Log Level">
+			<option value="">(None)</option>
 			<option value="ERROR">ERROR</option>
 			<option value="WARN">WARN</option>
 			<option value="INFO">INFO</option>
