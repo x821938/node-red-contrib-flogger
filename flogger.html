@@ -241,7 +241,9 @@
 	<p>In the <code>Timestamp</code> dropdown you can choose if you want to stamp each log line with
 	either UTC time, local time or no time at all</p>
 	<p>In the <code>Log Style</code> dropdown you can choose if you want a normal plain logfile similar
-	to syslog, or if you want a json logfile similar to NLOG</p>
+	to syslog, or if you want a json logfile similar to NLOG. If plain, 2 more options are shown:</p>
+	<p><code>Incl topic</code> Include msg.topic in the log if it exist</p>
+	<p><code>Incl source</code> Include the source of the message such as "msg.payload".</p>
 	<p>Check <code>Rotate</code> If you want to do automatic log rotation. If checked 3 more options
 	are shown:</p>
 	<p><code>Compress</code> Each rotated logfile will be gzip compressed if checked</p>
