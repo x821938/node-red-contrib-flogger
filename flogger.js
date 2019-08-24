@@ -50,7 +50,7 @@ module.exports = function(RED) {
 
 			logfile = node.logfile
 			if (msg.logfile) logfile = msg.logfile // logfile override via msg object if provided
-			LogRotate(node, logfile, logline.length)
+			LogRotate(node, logfile, logline.length, msg.rotateNow)
 			WriteMsgToFile(node, logfile, logline, logTimeStamp)
 
 			node.send(msg); // pass through original message
@@ -195,13 +195,13 @@ module.exports = function(RED) {
 	There will be maximum node.logconfig.rotatecount files in the directory.
 	If compression is set in node.logconfig.compress then the rotated files will be gzipped
 	*/
-	function LogRotate(node, filename, addlength) {
+	function LogRotate(node, filename, addlength, rotateNow) {
 		if (node.logconfig.logrotate && filename) {
 			fullpath = node.logconfig.logdir + "/" + filename
 			if (fs.existsSync(fullpath)) {
 				stats = fs.statSync(fullpath)
 				fileSizeInBytes = stats["size"]
-				if (fileSizeInBytes + addlength + 1 >= node.logconfig.logsize * 1000 ) {
+				if ((rotateNow === true) || (fileSizeInBytes + addlength + 1 >= node.logconfig.logsize * 1000 )) {
 					rotate(fullpath, { count: node.logconfig.logrotatecount, compress: (node.logconfig.logcompress==true)}, function(err) {
 						if (err) {
 							node.warn("Could not rotate logfiles: " + err)
