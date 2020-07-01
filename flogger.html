@@ -6,6 +6,7 @@
 			logname: {value:"",required:true},
 			logdir: {value:"",required:true},
 			stamp: {value:"utc"},
+            stampFormat: {value:"YYYY/MM/DD HH:mm:ss"},
 			logstyle: {value:"plain"},
 			logrotate: {value:""},
 			logcompress: {value:""},
@@ -59,6 +60,10 @@
 			<option value="utc">UTC</option>
 			<option value="local">Local</option>
 		</select>
+	</div>
+	<div class="form-row">
+	    <label for="node-config-input-stampFormat"><i class="fa fa-clock-o"></i> Timestamp Format</label>
+		<input type="text" id="node-config-input-stampFormat">
 	</div>
 	<div class="form-row">
 		<label for="node-config-input-logstyle"><i class="fa fa-clock-o"></i> Log Style</label>

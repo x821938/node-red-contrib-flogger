@@ -64,6 +64,7 @@ module.exports = function(RED) {
 		this.logdir = n.logdir
 		this.logname = n.logname
 		this.stamp = n.stamp
+		this.stampFormat = n.stampFormat;
 		this.logstyle = n.logstyle
 		this.logtopic = n.logtopic
 		this.logsource = n.logsource
@@ -153,13 +154,14 @@ module.exports = function(RED) {
 	Allowed time formats: none, utc, local 
 	*/
 	function GetLogTime(node) {
-		now = new Date()
+		now = new Date();
+		const format = node.logconfig.stampFormat||"YYYY/MM/DD HH:mm:ss";
 		if (node.logconfig.stamp == "none") {
 			logtime = ""
 		} else if (node.logconfig.stamp == "utc") {
-			logtime = moment(now).utc().format("YYYY/MM/DD HH:mm:ss") + "Z"
+			logtime = moment(now).utc().format(format) + "Z"
 		} else if (node.logconfig.stamp == "local") {	
-			logtime = moment(now).parseZone().local().format("YYYY/MM/DD HH:mm:ss")
+			logtime = moment(now).parseZone().local().format(format)
 		}
 		return (logtime)
 	}
