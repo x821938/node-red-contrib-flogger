@@ -32,32 +32,42 @@ module.exports = function(RED) {
 			}
 
 			if (node.logconfig.logstyle == "plain") {
-				if (node.logconfig.stamp == "none") {
-					logline = loglevel + " [" + logmessage.var + "] " + logmessage.msg + "\n"
-				} else {
-					logline = logTimeStamp + " " + loglevel + " [" + logmessage.var + "] " + logmessage.msg + "\n"
-				}
+				timeStamp = (node.logconfig.stamp === 'none' ? '' : logTimeStamp + ' ')
+				level = (loglevel === '' ? '' : loglevel + ' ')
+				topic = (node.logconfig.logtopic === true && msg.topic ? msg.topic : '')
+				source = (node.logconfig.logsource === true ? logmessage.var : '')
+				topicOrSource = (topic !== '' || source !== '')
+				topicAndSource = (topic !== '' && source !== '')
+				bracket1 = (topicOrSource ? '[' : '')
+				bracket2 = (topicOrSource ? '] ' : '')
+				separator = (topicAndSource ? ':' : '')
+
+				logline = timeStamp + level + bracket1 + topic + separator + source + bracket2 + logmessage.msg + '\n'
+
 			} else {
 				logline = GetJSONMsg(logTimeStamp, loglevel, logmessage.var, logmessage.raw)
 			}
 
 			logfile = node.logfile
 			if (msg.logfile) logfile = msg.logfile // logfile override via msg object if provided
-			LogRotate(node, logfile, logline.length)
+			LogRotate(node, logfile, logline.length, msg.rotateNow)
 			WriteMsgToFile(node, logfile, logline, logTimeStamp)
-			
+
 			node.send(msg); // pass through original message
 		})
 	}
 
 	RED.nodes.registerType("flogger",FloggerNode)
-	
+
 	function FloggerConfigNode(n) {
 		RED.nodes.createNode(this,n)
 		this.logdir = n.logdir
 		this.logname = n.logname
 		this.stamp = n.stamp
+		this.stampFormat = n.stampFormat;
 		this.logstyle = n.logstyle
+		this.logtopic = n.logtopic
+		this.logsource = n.logsource
 
 		this.logrotate = n.logrotate
 		this.logcompress = n.logcompress
@@ -144,13 +154,14 @@ module.exports = function(RED) {
 	Allowed time formats: none, utc, local 
 	*/
 	function GetLogTime(node) {
-		now = new Date()
+		now = new Date();
+		const format = node.logconfig.stampFormat||"YYYY/MM/DD HH:mm:ss";
 		if (node.logconfig.stamp == "none") {
 			logtime = ""
 		} else if (node.logconfig.stamp == "utc") {
-			logtime = moment(now).utc().format("YYYY/MM/DD HH:mm:ss") + "Z"
+			logtime = moment(now).utc().format(format) + "Z"
 		} else if (node.logconfig.stamp == "local") {	
-			logtime = moment(now).parseZone().local().format("YYYY/MM/DD HH:mm:ss")
+			logtime = moment(now).parseZone().local().format(format)
 		}
 		return (logtime)
 	}
@@ -186,13 +197,13 @@ module.exports = function(RED) {
 	There will be maximum node.logconfig.rotatecount files in the directory.
 	If compression is set in node.logconfig.compress then the rotated files will be gzipped
 	*/
-	function LogRotate(node, filename, addlength) {
+	function LogRotate(node, filename, addlength, rotateNow) {
 		if (node.logconfig.logrotate && filename) {
 			fullpath = node.logconfig.logdir + "/" + filename
 			if (fs.existsSync(fullpath)) {
 				stats = fs.statSync(fullpath)
 				fileSizeInBytes = stats["size"]
-				if (fileSizeInBytes + addlength + 1 >= node.logconfig.logsize * 1000 ) {
+				if ((rotateNow === true) || (fileSizeInBytes + addlength + 1 >= node.logconfig.logsize * 1000 )) {
 					rotate(fullpath, { count: node.logconfig.logrotatecount, compress: (node.logconfig.logcompress==true)}, function(err) {
 						if (err) {
 							node.warn("Could not rotate logfiles: " + err)

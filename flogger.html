@@ -6,11 +6,14 @@
 			logname: {value:"",required:true},
 			logdir: {value:"",required:true},
 			stamp: {value:"utc"},
+            stampFormat: {value:"YYYY/MM/DD HH:mm:ss"},
 			logstyle: {value:"plain"},
 			logrotate: {value:""},
 			logcompress: {value:""},
 			logrotatecount: {value: "5"},
-			logsize: {value: "1000"}
+			logsize: {value: "1000"},
+			logtopic: {value: ""},
+			logsource: {value: "1"},
 		},
 		label: function() {
 			return this.logname
@@ -23,6 +26,14 @@
       				$("#node-config-rotate-row").hide()
       			}
 			})
+
+			$("#node-config-input-logstyle").change(function() {
+                        	if ($(this).val() == "plain") {
+                                	$("#node-config-plain-row").show()
+                        	} else {
+					$("#node-config-plain-row").hide()
+                        	}
+                	})
 		},
 		oneditsave: function() {
 			if ($("#node-config-input-logrotate").is(':checked')) {
@@ -51,11 +62,25 @@
 		</select>
 	</div>
 	<div class="form-row">
+	    <label for="node-config-input-stampFormat"><i class="fa fa-clock-o"></i> Timestamp Format</label>
+		<input type="text" id="node-config-input-stampFormat">
+	</div>
+	<div class="form-row">
 		<label for="node-config-input-logstyle"><i class="fa fa-clock-o"></i> Log Style</label>
 		<select type="text" id="node-config-input-logstyle" placeholder="Log Style">
 			<option value="plain">Plain Text</option>
 			<option value="json">Pure JSON</option>
 		</select>
+	</div>
+	<div class="node-config-plain-row">
+		<div class="form-row">
+			<label style="width: auto; margin-left: 20px; margin-right: 10px;" for="node-config-input-logtopic"><i class="fa fa-chevron-right"></i> Incl topic</label>
+			<input type="checkbox" id="node-config-input-logtopic" style="display: inline-block; width: auto; vertical-align: top;">
+		</div>
+		<div class="form-row">
+			<label style="width: auto; margin-left: 20px; margin-right: 10px;" for="node-config-input-logsource"><i class="fa fa-chevron-right"></i> Incl source</label>
+			<input type="checkbox" id="node-config-input-logsource" style="display: inline-block; width: auto; vertical-align: top;">
+		</div>
 	</div>
 	<div class="form-row">
 		<label for="node-config-input-logrotate"><i class="fa fa-repeat"></i> Rotate</label>
@@ -93,7 +118,7 @@
 			inputobject: {value:"payload"},
 			inputobjectType: {value: 'msg'},
 			inputmoustache: {value: 'Recieved payload {{payload}} and topic {{topic}}'},
-			loglevel: {value:"INFO", required: true},
+			loglevel: {value:"INFO", required: false},
 			logconfig: {type:"config-log"},
 			sendpane: {value:""},
 		},
@@ -156,6 +181,7 @@
 	<div class="form-row">
 		<label for="node-input-loglevel"><i class="fa fa-exclamation"></i> Level</label>
 		<select type="text" id="node-input-loglevel" placeholder="Log Level">
+			<option value="">(None)</option>
 			<option value="ERROR">ERROR</option>
 			<option value="WARN">WARN</option>
 			<option value="INFO">INFO</option>
@@ -220,7 +246,9 @@
 	<p>In the <code>Timestamp</code> dropdown you can choose if you want to stamp each log line with
 	either UTC time, local time or no time at all</p>
 	<p>In the <code>Log Style</code> dropdown you can choose if you want a normal plain logfile similar
-	to syslog, or if you want a json logfile similar to NLOG</p>
+	to syslog, or if you want a json logfile similar to NLOG. If plain, 2 more options are shown:</p>
+	<p><code>Incl topic</code> Include msg.topic in the log if it exist</p>
+	<p><code>Incl source</code> Include the source of the message such as "msg.payload".</p>
 	<p>Check <code>Rotate</code> If you want to do automatic log rotation. If checked 3 more options
 	are shown:</p>
 	<p><code>Compress</code> Each rotated logfile will be gzip compressed if checked</p>
