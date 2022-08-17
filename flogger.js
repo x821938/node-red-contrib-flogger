@@ -3,6 +3,7 @@ const moment = require('moment')
 const mustache=require('mustache')
 const validLoglevels = ["ERROR", "WARN", "INFO", "DEBUG", "TRACE"]
 const rotate = require('log-rotate');
+const path = require('path');
 
 module.exports = function(RED) {
 	function FloggerNode(n) {
@@ -163,7 +164,7 @@ module.exports = function(RED) {
 	*/
 	function WriteMsgToFile(node, filename, msg, logtime) {
 		if (logfile) {
-			fullpath = node.logconfig.logdir + "/" + logfile
+			const fullpath = path.join(node.logconfig.logdir, logfile);
 			try {
 				fs.appendFileSync(fullpath, logline)
 				if (node.logconfig.stamp != "none") {
@@ -188,7 +189,7 @@ module.exports = function(RED) {
 	*/
 	function LogRotate(node, filename, addlength) {
 		if (node.logconfig.logrotate && filename) {
-			fullpath = node.logconfig.logdir + "/" + filename
+			const fullpath = path.join(node.logconfig.logdir, filename);
 			if (fs.existsSync(fullpath)) {
 				stats = fs.statSync(fullpath)
 				fileSizeInBytes = stats["size"]
