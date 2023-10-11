@@ -35,5 +35,7 @@ Logrotation with/without compression can be enabled.
 
 **Example output ~/logs/logfile2:**
 
-    {"time":"2019/07/15 16:46:46","level":"DEBUG","var":"msg.payload","message":1563202006292}
-	{"time":"2019/07/15 16:46:51","level":"DEBUG","var":"msg.payload","message":1563202011877}
+    [
+        {"time":"2019/07/15 16:46:46","level":"DEBUG","var":"msg.payload","message":1563202006292},
+	    {"time":"2019/07/15 16:46:51","level":"DEBUG","var":"msg.payload","message":1563202011877}
+    ]
