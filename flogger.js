@@ -1,12 +1,12 @@
 const fs = require('fs')
 const moment = require('moment')
-const mustache=require('mustache')
+const mustache = require('mustache')
 const validLoglevels = ["ERROR", "WARN", "INFO", "DEBUG", "TRACE"]
 const rotate = require('log-rotate');
 
-module.exports = function(RED) {
+module.exports = function (RED) {
 	function FloggerNode(n) {
-		RED.nodes.createNode(this,n)
+		RED.nodes.createNode(this, n)
 
 		this.loglevel = n.loglevel
 		this.logfile = n.logfile
@@ -18,7 +18,7 @@ module.exports = function(RED) {
 		this.sendpane = n.sendpane
 		var node = this
 
-		node.on('input', function(msg) {
+		node.on('input', function (msg) {
 			loglevel = node.loglevel
 			if (validLoglevels.includes(msg.loglevel)) { // Override loglevel with msg.loglevel
 				loglevel = msg.loglevel
@@ -45,15 +45,15 @@ module.exports = function(RED) {
 			if (msg.logfile) logfile = msg.logfile // logfile override via msg object if provided
 			LogRotate(node, logfile, logline.length)
 			WriteMsgToFile(node, logfile, logline, logTimeStamp)
-			
+
 			node.send(msg); // pass through original message
 		})
 	}
 
-	RED.nodes.registerType("flogger",FloggerNode)
-	
+	RED.nodes.registerType("flogger", FloggerNode)
+
 	function FloggerConfigNode(n) {
-		RED.nodes.createNode(this,n)
+		RED.nodes.createNode(this, n)
 		this.logdir = n.logdir
 		this.logname = n.logname
 		this.stamp = n.stamp
@@ -65,7 +65,7 @@ module.exports = function(RED) {
 		this.logsize = n.logsize
 	}
 
-	RED.nodes.registerType("config-log",FloggerConfigNode)
+	RED.nodes.registerType("config-log", FloggerConfigNode)
 
 
 	/* Input: variable
@@ -102,9 +102,9 @@ module.exports = function(RED) {
 	.raw: The object that should be logged but returned as an object.
 	*/
 	function ConstructLogMessage(node, msg) {
-		if (node.inputchoice == "object" && node.inputobject.length>0 ) {
+		if (node.inputchoice == "object" && node.inputobject.length > 0) {
 			message = "Please choose a flow or global name!"
-			if ( node.inputobjectType == "msg") {
+			if (node.inputobjectType == "msg") {
 				if (node.inputobject) {
 					messageRaw = eval("msg." + node.inputobject)
 					message = VarToString(messageRaw)
@@ -114,7 +114,7 @@ module.exports = function(RED) {
 					message = VarToString(messageRaw)
 					messageVar = "msg"
 				}
-			} else if (node.inputobjectType == "flow" ) {
+			} else if (node.inputobjectType == "flow") {
 				flowvar = node.inputobject
 				messageRaw = node.context().flow.get(flowvar)
 				message = VarToString(messageRaw)
@@ -130,12 +130,12 @@ module.exports = function(RED) {
 			message = VarToString(messageRaw)
 			messageVar = "msg"
 		} else if (node.inputchoice == "moustache") {
-			mustache.escape = function(text) {return text;}
+			mustache.escape = function (text) { return text; }
 			messageRaw = mustache.render(node.inputmoustache, msg)
 			message = messageRaw
 			messageVar = "moustache"
 		}
-		return {msg: message, var: messageVar, raw: messageRaw}
+		return { msg: message, var: messageVar, raw: messageRaw }
 	}
 
 
@@ -149,7 +149,7 @@ module.exports = function(RED) {
 			logtime = ""
 		} else if (node.logconfig.stamp == "utc") {
 			logtime = moment(now).utc().format("YYYY/MM/DD HH:mm:ss") + "Z"
-		} else if (node.logconfig.stamp == "local") {	
+		} else if (node.logconfig.stamp == "local") {
 			logtime = moment(now).parseZone().local().format("YYYY/MM/DD HH:mm:ss")
 		}
 		return (logtime)
@@ -165,16 +165,23 @@ module.exports = function(RED) {
 		if (logfile) {
 			fullpath = node.logconfig.logdir + "/" + logfile
 			try {
-				fs.appendFileSync(fullpath, logline)
+				if (node.logconfig.logstyle === "plain")
+					fs.appendFileSync(fullpath, logline)
+				else {
+					let jsonArray = fs.existsSync(fullpath) ? JSON.parse(fs.readFileSync(fullpath)) : []
+					jsonArray.push(JSON.parse(logline))
+					fs.writeFileSync(fullpath, JSON.stringify(jsonArray))
+				}
 				if (node.logconfig.stamp != "none") {
-					node.status({shape: "ring", fill: "green", text: logtime})
+					node.status({ shape: "ring", fill: "green", text: logtime })
 				}
 			} catch (err) {
-				node.status({shape: "ring", fill: "red", text: "Cant write file!"})
+				node.status({ shape: "ring", fill: "red", text: "Cant write file!" })
 				node.error("Can't write file: " + err, msg);
 			}
+
 		} else {
-			node.status({shape: "ring", fill: "red", text: "Missing logfile!"})
+			node.status({ shape: "ring", fill: "red", text: "Missing logfile!" })
 			node.warn("Nothing got logged because you didn't provide a logfile in configuration and has not been overridden from msg.logfile")
 		}
 	}
@@ -192,13 +199,13 @@ module.exports = function(RED) {
 			if (fs.existsSync(fullpath)) {
 				stats = fs.statSync(fullpath)
 				fileSizeInBytes = stats["size"]
-				if (fileSizeInBytes + addlength + 1 >= node.logconfig.logsize * 1000 ) {
-					rotate(fullpath, { count: node.logconfig.logrotatecount, compress: (node.logconfig.logcompress==true)}, function(err) {
+				if (fileSizeInBytes + addlength + 1 >= node.logconfig.logsize * 1000) {
+					rotate(fullpath, { count: node.logconfig.logrotatecount, compress: (node.logconfig.logcompress == true) }, function (err) {
 						if (err) {
 							node.warn("Could not rotate logfiles: " + err)
 						} else {
 							if (!fs.existsSync(fullpath)) {
-								fs.appendFileSync(fullpath,'');  // Create a new empty file if there is none
+								fs.appendFileSync(fullpath, '');  // Create a new empty file if there is none
 							}
 						}
 					})
